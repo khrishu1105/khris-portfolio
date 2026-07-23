@@ -9,12 +9,15 @@
   :root {
     --ink: #05070a;
     --paper: #e8edf0;
-    --muted: rgba(232, 237, 240, 0.6);
+    --muted: rgba(232, 237, 240, 0.62);
     --accent: #2fe0c6;
     --pad: clamp(1.2rem, 6vw, 4.5rem);
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
+  html {
+    scroll-behavior: smooth;
+    scroll-snap-type: y mandatory;   /* 一頁一頁切換 */
+  }
   body {
     background: var(--ink);
     color: var(--paper);
@@ -24,18 +27,16 @@
   }
 
   #scene { position: fixed; inset: 0; z-index: 0; display: block; }
-
-  /* 讓文字在方塊上更清楚的暗角 */
   .vignette {
     position: fixed; inset: 0; z-index: 1; pointer-events: none;
-    background: radial-gradient(ellipse at center, transparent 45%, rgba(5,7,10,0.55) 100%);
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(5,7,10,0.5) 100%);
   }
 
-  /* 頂部導覽列 */
+  /* 導覽列 */
   .nav {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 4;
+    position: fixed; top: 0; left: 0; right: 0; z-index: 5;
     display: flex; align-items: center; justify-content: space-between;
-    padding: clamp(1rem, 3vw, 1.8rem) var(--pad);
+    padding: clamp(1rem, 3vw, 1.7rem) var(--pad);
     pointer-events: none;
   }
   .brand {
@@ -51,68 +52,89 @@
   @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.55;transform:scale(.8)} }
   .nav-cta {
     pointer-events: auto; text-decoration: none;
-    font-size: 0.85rem; letter-spacing: 0.08em; font-weight: 600;
-    color: var(--paper);
-    border: 1px solid rgba(232,237,240,0.28);
-    padding: 0.5rem 1rem; border-radius: 100px;
-    transition: border-color .25s, color .25s, background .25s;
+    font-size: 0.85rem; letter-spacing: 0.06em; font-weight: 700;
+    color: var(--ink); background: var(--accent);
+    padding: 0.55rem 1.15rem; border-radius: 100px;
+    box-shadow: 0 6px 22px rgba(47,224,198,0.3);
+    transition: transform .2s;
   }
-  .nav-cta:hover { border-color: var(--accent); color: var(--accent); }
+  .nav-cta:hover { transform: translateY(-2px); }
 
+  /* 每一頁 */
   .content { position: relative; z-index: 2; }
   section {
     min-height: 100svh;
-    display: flex; flex-direction: column; justify-content: center;
+    scroll-snap-align: center;
+    display: flex; align-items: center; justify-content: center;
     padding: 0 var(--pad);
     pointer-events: none;
   }
-  .kicker {
-    font-size: clamp(0.7rem, 2vw, 0.85rem);
-    letter-spacing: 0.4em; text-transform: uppercase;
-    color: var(--accent); margin-bottom: 1.2rem; opacity: 0.95;
+  section.hero { align-items: flex-end; padding-bottom: 12svh; } /* 第一頁圖框放下方，不擋 KHRIS */
+
+  /* 半透明玻璃圖框 */
+  .card {
+    pointer-events: auto;
+    text-align: center;
+    max-width: 620px; width: 100%;
+    padding: clamp(1.6rem, 4vw, 2.8rem) clamp(1.4rem, 5vw, 3.4rem);
+    background: rgba(10, 14, 20, 0.34);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 22px;
+    backdrop-filter: blur(16px) saturate(1.2);
+    -webkit-backdrop-filter: blur(16px) saturate(1.2);
+    box-shadow: 0 24px 70px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+
+  .kicker, .tag {
+    font-size: clamp(0.7rem, 2vw, 0.82rem);
+    letter-spacing: 0.35em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 1rem; opacity: 0.95;
   }
   h1 {
-    font-size: clamp(2.8rem, 12vw, 7rem);
-    line-height: 1.0; font-weight: 800; letter-spacing: -0.03em;
+    font-size: clamp(2.4rem, 8vw, 4.6rem);
+    line-height: 1.05; font-weight: 800; letter-spacing: -0.02em;
   }
-  h1 em, h2 em { color: var(--accent); font-style: normal; }
   h2 {
-    font-size: clamp(1.9rem, 6vw, 4rem);
-    line-height: 1.12; font-weight: 800; letter-spacing: -0.02em; max-width: 16ch;
+    font-size: clamp(1.8rem, 6vw, 3.2rem);
+    line-height: 1.12; font-weight: 800; letter-spacing: -0.02em;
+  }
+  h2 em { color: var(--accent); font-style: normal; }
+
+  /* 漸層文字（第一頁圖框） */
+  .grad {
+    background: linear-gradient(100deg, #2fe0c6 0%, #6ea8ff 45%, #ff5a9e 100%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
   }
 
-  /* 可點擊的聯絡按鈕 */
+  .card p {
+    margin-top: 1.1rem;
+    font-size: clamp(0.95rem, 2.2vw, 1.12rem);
+    line-height: 1.7; color: var(--muted);
+  }
   .btn {
-    pointer-events: auto; align-self: flex-start;
-    margin-top: 2rem; text-decoration: none;
+    pointer-events: auto;
     display: inline-flex; align-items: center; gap: 0.5rem;
-    font-weight: 700; font-size: clamp(0.95rem, 2.4vw, 1.1rem);
+    margin-top: 1.6rem; text-decoration: none;
+    font-weight: 700; font-size: clamp(0.95rem, 2.4vw, 1.08rem);
     color: var(--ink); background: var(--accent);
-    padding: 0.85rem 1.6rem; border-radius: 100px;
-    box-shadow: 0 8px 30px rgba(47,224,198,0.28);
+    padding: 0.85rem 1.7rem; border-radius: 100px;
+    box-shadow: 0 8px 30px rgba(47,224,198,0.3);
     transition: transform .2s, box-shadow .2s;
   }
-  .btn:hover { transform: translateY(-2px); box-shadow: 0 12px 38px rgba(47,224,198,0.42); }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 12px 38px rgba(47,224,198,0.45); }
 
-  /* 頁尾 */
   .footer {
     position: fixed; bottom: 0; left: 0; right: 0; z-index: 3;
     display: flex; justify-content: space-between; align-items: center;
-    padding: clamp(0.9rem, 2.5vw, 1.4rem) var(--pad);
+    padding: clamp(0.8rem, 2.5vw, 1.3rem) var(--pad);
     font-size: 0.72rem; letter-spacing: 0.08em; color: var(--muted);
     pointer-events: none;
   }
-  .scroll-hint {
-    font-size: 0.72rem; letter-spacing: 0.15em; color: var(--muted);
-    animation: bob 1.8s ease-in-out infinite;
-    transition: opacity .4s;
-  }
+  .scroll-hint { animation: bob 1.8s ease-in-out infinite; transition: opacity .4s; }
   body.scrolled .scroll-hint { opacity: 0; }
   @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(6px)} }
-
-  @media (max-width: 640px) {
-    .footer .made { display: none; } /* 手機空間小，只留捲動提示 */
-  }
+  @media (max-width: 640px) { .footer .made { display: none; } }
 </style>
 
 <script type="importmap">
@@ -126,45 +148,60 @@
 
 <header class="nav">
   <a class="brand" href="#top"><span class="dot"></span>KHRIS</a>
-  <a class="nav-cta" href="mailto:your-email@example.com">聯絡 →</a>
+  <a class="nav-cta" href="mailto:your-email@example.com">聊聊合作</a>
 </header>
 
 <div class="content">
-  <!-- 形狀 1：KHRIS 文字 -->
-  <section>
-    <div class="kicker">Portfolio · 2026</div>
-    <h1>Design &<br /><em>Planning</em>.</h1>
+  <!-- 第 1 頁：KHRIS 方塊 + 漸層圖框 -->
+  <section class="hero">
+    <div class="card">
+      <div class="kicker">Portfolio · 2026</div>
+      <h1 class="grad">讓你的提案，<br />被記住。</h1>
+      <p>都市計畫背景的設計者，把複雜的內容整理成一眼看得懂的畫面。</p>
+    </div>
   </section>
 
-  <!-- 形狀 2：球體 -->
+  <!-- 第 2 頁：球體 -->
   <section>
-    <h2>我把想法，變成<em>看得懂的設計</em>。</h2>
+    <div class="card">
+      <div class="tag">01 — 我做什麼</div>
+      <h2>把想法，變成<em>看得懂的設計</em></h2>
+      <p>簡報設計 · 資訊視覺化 · 專案規劃</p>
+    </div>
   </section>
 
-  <!-- 形狀 3：螺旋塔 -->
+  <!-- 第 3 頁：螺旋塔 -->
   <section>
-    <h2>規劃 × 設計 × <em>資料</em></h2>
+    <div class="card">
+      <div class="tag">02 — 我的底子</div>
+      <h2>規劃 × 設計 × <em>資料</em></h2>
+      <p>成大都市計畫的訓練 × 自由接案的實戰</p>
+    </div>
   </section>
 
-  <!-- 形狀 4：波浪 -->
+  <!-- 第 4 頁：波浪 -->
   <section>
-    <h2>想聊聊你的<em>下一個專案</em>？</h2>
-    <a class="btn" href="mailto:your-email@example.com">寄信給我 →</a>
+    <div class="card">
+      <div class="tag">03 — 合作</div>
+      <h2>來聊聊你的<em>下一個專案</em></h2>
+      <a class="btn" href="mailto:your-email@example.com">寄信給我 →</a>
+    </div>
   </section>
 </div>
 
 <footer class="footer">
   <span class="made">Built with Three.js · Khris 2026</span>
-  <span class="scroll-hint">↓ 往下滑會炸開變形</span>
+  <span class="scroll-hint">↓ 換頁看方塊變形</span>
 </footer>
 
 <script type="module">
 import * as THREE from 'three';
 
-// ---------- 1. 基本場景（深黑）----------
+// ---------- 場景 ----------
 const canvas = document.querySelector('#scene');
 const isMobile = Math.min(window.innerWidth, window.innerHeight) < 700;
-const fitWidth = isMobile ? 39 : 44; // 手機用較小的目標寬 → 內容填更滿、更有衝擊力
+const fitWidth = isMobile ? 39 : 44;
+
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.75 : 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -173,68 +210,59 @@ const scene = new THREE.Scene();
 scene.fog = new THREE.Fog(0x05070a, 34, 120);
 
 const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 200);
-const baseZ = 40;                 // 鏡頭固定距離（不再推很遠，避免內容超出霧氣範圍被吃掉）
+const baseZ = 40;
 camera.position.z = baseZ;
 
-// 用「縮放整個方塊群」來適應螢幕，而不是把鏡頭拉遠：
-// 手機直式時把雕塑縮小，KHRIS 與波浪就完整入鏡，且不會超出霧氣範圍
 let worldScale = 1;
 function computeFit() {
   const aspect = window.innerWidth / window.innerHeight;
   camera.aspect = aspect;
   camera.updateProjectionMatrix();
   const visibleWidth = 2 * baseZ * Math.tan(camera.fov * Math.PI / 360) * aspect;
-  worldScale = Math.min(visibleWidth / fitWidth, 1.0); // 手機縮小適配；桌機維持原大小（不放大）
+  worldScale = Math.min(visibleWidth / fitWidth, 1.0);
   if (typeof mesh !== 'undefined' && mesh) mesh.scale.setScalar(worldScale);
 }
 
-// ---------- 2. 燈光（蒂芬妮綠輪廓光 = 科技感關鍵）----------
-scene.add(new THREE.AmbientLight(0xc4d0d6, 0.95));
-scene.add(new THREE.HemisphereLight(0xffffff, 0x121820, 0.85));
-const key = new THREE.DirectionalLight(0xffffff, 3.4);
-key.position.set(4, 9, 8);
+// ---------- 燈光（科技金屬）----------
+scene.add(new THREE.AmbientLight(0xc4d0d6, 1.0));
+scene.add(new THREE.HemisphereLight(0x5ff3e0, 0x121c20, 1.15));
+const key = new THREE.DirectionalLight(0xffffff, 3.6);
+key.position.set(5, 9, 8);
 scene.add(key);
-const pink = new THREE.DirectionalLight(0xff5a9e, 2.6);   // 粉色側光（左）強化漸層粉端
-pink.position.set(-9, 0, 3);
-scene.add(pink);
-const tiff = new THREE.DirectionalLight(0x2fe0c6, 2.2);   // 蒂芬妮綠側光（右）強化綠端
-tiff.position.set(9, -1, 3);
-scene.add(tiff);
-const fill = new THREE.DirectionalLight(0xffffff, 2.2);   // 正面補光
+const rim = new THREE.DirectionalLight(0x2fe0c6, 3.2);
+rim.position.set(-8, -2, 3);
+scene.add(rim);
+const fill = new THREE.DirectionalLight(0xffffff, 2.8);
 fill.position.set(0, 0, 12);
 scene.add(fill);
 
-// ---------- 3. 網格方塊（手機自動降密度）----------
+// ---------- 方塊（低調金屬色，灰→蒂芬妮綠）----------
 const N = isMobile ? 42 : 50;
 const COUNT = N * N;
-const cubeSize = isMobile ? 0.62 : 0.4;   // 手機方塊加粗，縮放後仍夠份量
+const cubeSize = isMobile ? 0.62 : 0.4;
 const geo = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
 const mat = new THREE.MeshStandardMaterial({
-  roughness: 0.2, metalness: 0.35,
-  emissive: 0x1b2028, emissiveIntensity: 0.6, // 中性微亮，不蓋掉漸層色
+  roughness: 0.22, metalness: 0.35,
+  emissive: 0x1a5f56, emissiveIntensity: 1.05,
 });
 const mesh = new THREE.InstancedMesh(geo, mat, COUNT);
 mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
 
 const grid = [];
-const cA = new THREE.Color(0xff4d8d); // 洋紅粉
-const cB = new THREE.Color(0x8f6bff); // 紫
-const cC = new THREE.Color(0x2fe0c6); // 蒂芬妮綠
-const tmp = new THREE.Color();
+const color = new THREE.Color();
+const cGray = new THREE.Color(0xa4b0ba);
+const cTiff = new THREE.Color(0x48f7dd);
 for (let i = 0; i < COUNT; i++) {
   const gx = i % N, gz = Math.floor(i / N);
   const u = gx / (N - 1), v = gz / (N - 1);
   grid.push({ u, v });
-  // 對角方向的三色漸層：粉 → 紫 → 蒂芬妮綠
-  const g = u * 0.72 + v * 0.28;
-  if (g < 0.5) tmp.copy(cA).lerp(cB, g / 0.5);
-  else         tmp.copy(cB).lerp(cC, (g - 0.5) / 0.5);
-  mesh.setColorAt(i, tmp);
+  color.copy(cGray).lerp(cTiff, (u + v) / 2);
+  mesh.setColorAt(i, color);
 }
 scene.add(mesh);
-computeFit(); // 方塊建立後套用螢幕縮放（手機才不會被切）
+computeFit();
 
-// ---------- 4. 把文字「KHRIS」轉成方塊座標 ----------
+// ---------- 文字「KHRIS」座標 ----------
 function buildTextTargets(text) {
   const W = 240, H = 72;
   const c = document.createElement('canvas');
@@ -242,16 +270,13 @@ function buildTextTargets(text) {
   const ctx = c.getContext('2d');
   ctx.fillStyle = '#fff';
   ctx.font = 'bold 58px Arial, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText(text, W / 2, H / 2);
   const px = ctx.getImageData(0, 0, W, H).data;
-
   const pts = [];
   for (let y = 0; y < H; y++)
     for (let x = 0; x < W; x++)
       if (px[(y * W + x) * 4 + 3] > 128) pts.push([x, y]);
-
   const out = new Float32Array(COUNT * 3);
   for (let i = 0; i < COUNT; i++) {
     const p = pts[Math.floor((i / COUNT) * pts.length)];
@@ -263,11 +288,9 @@ function buildTextTargets(text) {
 }
 const textTargets = buildTextTargets('KHRIS');
 
-// ---------- 5. 四種形狀公式 ----------
+// ---------- 四種形狀 ----------
 const TAU = Math.PI * 2;
-function textForm(u, v, t, i) {
-  return [textTargets[i*3], textTargets[i*3+1], textTargets[i*3+2]];
-}
+function textForm(u, v, t, i) { return [textTargets[i*3], textTargets[i*3+1], textTargets[i*3+2]]; }
 function sphereForm(u, v) {
   const theta = u * TAU, phi = v * Math.PI, r = 9;
   return [r*Math.sin(phi)*Math.cos(theta), r*Math.cos(phi), r*Math.sin(phi)*Math.sin(theta)];
@@ -282,7 +305,7 @@ function waveForm(u, v, t) {
 }
 const FORMS = [textForm, sphereForm, helixForm, waveForm];
 
-// ---------- 6. 炸開方向 ----------
+// ---------- 炸開方向 ----------
 const scatter = new Float32Array(COUNT * 3);
 for (let i = 0; i < COUNT; i++) {
   const a = Math.sin(i * 91.7) * TAU;
@@ -293,14 +316,27 @@ for (let i = 0; i < COUNT; i++) {
   scatter[i*3+2] = Math.sin(b) * Math.sin(a) * mag;
 }
 
-// ---------- 7. 滑鼠 + 捲動 ----------
-const mouse = { x: 0, y: 0 };
+// ---------- 滑鼠：視差 + 碰觸方塊擾動 ----------
 const smooth = { x: 0, y: 0 };
-window.addEventListener('pointermove', (e) => {
-  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = (e.clientY / window.innerHeight) * 2 - 1;
-});
+const ndc = new THREE.Vector2();
+let hasCursor = false;
+function setCursor(clientX, clientY) {
+  smooth.tx = (clientX / window.innerWidth) * 2 - 1;   // 視差目標
+  smooth.ty = (clientY / window.innerHeight) * 2 - 1;
+  ndc.x = (clientX / window.innerWidth) * 2 - 1;
+  ndc.y = -((clientY / window.innerHeight) * 2 - 1);   // NDC 的 y 要反轉
+  hasCursor = true;
+}
+smooth.tx = 0; smooth.ty = 0;
+window.addEventListener('pointermove', (e) => setCursor(e.clientX, e.clientY));
+window.addEventListener('pointerleave', () => { hasCursor = false; });
 
+const raycaster = new THREE.Raycaster();
+const planeZ = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+const hitV = new THREE.Vector3();
+const localCursor = new THREE.Vector3();
+
+// ---------- 捲動 ----------
 let scrollTarget = 0, scrollSmooth = 0;
 function updateScroll() {
   const max = document.body.scrollHeight - window.innerHeight;
@@ -314,15 +350,15 @@ const smoothstep = (x) => x * x * (3 - 2 * x);
 const cur = new Float32Array(COUNT * 3);
 let initialised = false;
 
-// ---------- 8. 動畫迴圈 ----------
+// ---------- 動畫迴圈 ----------
 const dummy = new THREE.Object3D();
 const clock = new THREE.Clock();
 
 function tick() {
   const t = clock.getElapsedTime();
   scrollSmooth += (scrollTarget - scrollSmooth) * 0.05;
-  smooth.x += (mouse.x - smooth.x) * 0.04;
-  smooth.y += (mouse.y - smooth.y) * 0.04;
+  smooth.x += (smooth.tx - smooth.x) * 0.04;
+  smooth.y += (smooth.ty - smooth.y) * 0.04;
 
   const stage = scrollSmooth * (FORMS.length - 1);
   let idx = Math.floor(stage);
@@ -330,8 +366,23 @@ function tick() {
   const blend = smoothstep(stage - idx);
   const formA = FORMS[idx];
   const formB = FORMS[idx + 1];
-
   const scatterAmt = Math.pow(Math.sin(blend * Math.PI), 0.32);
+
+  // 視差旋轉 + 把游標投影到方塊的座標系（給「碰觸擾動」用）
+  mesh.rotation.y = smooth.x * 0.22;
+  mesh.rotation.x = smooth.y * 0.1;
+  mesh.updateMatrixWorld();
+  let cx = 0, cy = 0, cz = 0, cursorActive = false;
+  if (hasCursor) {
+    raycaster.setFromCamera(ndc, camera);
+    if (raycaster.ray.intersectPlane(planeZ, hitV)) {
+      localCursor.copy(hitV);
+      mesh.worldToLocal(localCursor);
+      cx = localCursor.x; cy = localCursor.y; cz = localCursor.z;
+      cursorActive = true;
+    }
+  }
+  const R = 7.5, R2 = R * R;
 
   for (let i = 0; i < COUNT; i++) {
     const g = grid[i];
@@ -339,9 +390,20 @@ function tick() {
     const b = formB(g.u, g.v, t, i);
     const j = i * 3;
 
-    const tx = a[0] + (b[0]-a[0])*blend + scatter[j]   * scatterAmt;
-    const ty = a[1] + (b[1]-a[1])*blend + scatter[j+1] * scatterAmt;
-    const tz = a[2] + (b[2]-a[2])*blend + scatter[j+2] * scatterAmt;
+    let tx = a[0] + (b[0]-a[0])*blend + scatter[j]   * scatterAmt;
+    let ty = a[1] + (b[1]-a[1])*blend + scatter[j+1] * scatterAmt;
+    let tz = a[2] + (b[2]-a[2])*blend + scatter[j+2] * scatterAmt;
+
+    // 碰觸擾動：游標附近的方塊被推開
+    if (cursorActive) {
+      const dx = cur[j]-cx, dy = cur[j+1]-cy, dz = cur[j+2]-cz;
+      const d2 = dx*dx + dy*dy + dz*dz;
+      if (d2 < R2) {
+        const d = Math.sqrt(d2) + 1e-3;
+        const push = (1 - d/R); const p = push * push * 7;
+        tx += dx/d*p; ty += dy/d*p; tz += dz/d*p;
+      }
+    }
 
     if (!initialised) { cur[j]=tx; cur[j+1]=ty; cur[j+2]=tz; }
     cur[j]   += (tx - cur[j])   * 0.16;
@@ -356,10 +418,7 @@ function tick() {
   initialised = true;
   mesh.instanceMatrix.needsUpdate = true;
 
-  mesh.rotation.y = smooth.x * 0.35;
-  mesh.rotation.x = smooth.y * 0.18;
-
-  camera.position.z = baseZ - scrollSmooth * (baseZ * 0.12); // 隨捲動輕微拉近
+  camera.position.z = baseZ - scrollSmooth * (baseZ * 0.12);
   camera.lookAt(0, 0, 0);
 
   renderer.render(scene, camera);
@@ -367,7 +426,7 @@ function tick() {
 }
 tick();
 
-// ---------- 9. 縮放自適應 ----------
+// ---------- 縮放自適應 ----------
 window.addEventListener('resize', () => {
   computeFit();
   renderer.setSize(window.innerWidth, window.innerHeight);

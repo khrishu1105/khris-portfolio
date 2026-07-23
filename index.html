@@ -164,6 +164,7 @@ import * as THREE from 'three';
 // ---------- 1. 基本場景（深黑）----------
 const canvas = document.querySelector('#scene');
 const isMobile = Math.min(window.innerWidth, window.innerHeight) < 700;
+const fitWidth = isMobile ? 39 : 44; // 手機用較小的目標寬 → 內容填更滿、更有衝擊力
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.75 : 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -183,7 +184,7 @@ function computeFit() {
   camera.aspect = aspect;
   camera.updateProjectionMatrix();
   const visibleWidth = 2 * baseZ * Math.tan(camera.fov * Math.PI / 360) * aspect;
-  worldScale = Math.min(visibleWidth / 44, 1.0); // 手機縮小適配；桌機維持原大小（不放大）
+  worldScale = Math.min(visibleWidth / fitWidth, 1.0); // 手機縮小適配；桌機維持原大小（不放大）
   if (typeof mesh !== 'undefined' && mesh) mesh.scale.setScalar(worldScale);
 }
 
@@ -201,9 +202,10 @@ fill.position.set(0, 0, 12);
 scene.add(fill);
 
 // ---------- 3. 網格方塊（手機自動降密度）----------
-const N = isMobile ? 40 : 50;
+const N = isMobile ? 42 : 50;
 const COUNT = N * N;
-const geo = new THREE.BoxGeometry(0.4, 0.4, 0.4);
+const cubeSize = isMobile ? 0.62 : 0.4;   // 手機方塊加粗，縮放後仍夠份量
+const geo = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
 const mat = new THREE.MeshStandardMaterial({
   roughness: 0.22, metalness: 0.3,
   emissive: 0x1a5f56, emissiveIntensity: 1.15,

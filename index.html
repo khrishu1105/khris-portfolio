@@ -169,23 +169,23 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.75 : 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
 
 const scene = new THREE.Scene();
-scene.fog = new THREE.Fog(0x05070a, 30, 90);
+scene.fog = new THREE.Fog(0x05070a, 34, 120);
 
 const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 200);
+const baseZ = 40;                 // 鏡頭固定距離（不再推很遠，避免內容超出霧氣範圍被吃掉）
+camera.position.z = baseZ;
 
-// 依螢幕比例自動算鏡頭距離，讓 KHRIS 在手機直式也完整入鏡
-let baseZ = 40;
+// 用「縮放整個方塊群」來適應螢幕，而不是把鏡頭拉遠：
+// 手機直式時把雕塑縮小，KHRIS 與波浪就完整入鏡，且不會超出霧氣範圍
+let worldScale = 1;
 function computeFit() {
   const aspect = window.innerWidth / window.innerHeight;
-  const vFov = camera.fov * Math.PI / 180;
-  const targetWidth = 46;                 // 想讓寬 46 的內容入鏡（KHRIS 約 38 寬 + 邊距）
-  let z = targetWidth / (2 * Math.tan(vFov / 2) * aspect);
-  baseZ = Math.max(z, 36);                // 寬螢幕不要靠太近
   camera.aspect = aspect;
   camera.updateProjectionMatrix();
+  const visibleWidth = 2 * baseZ * Math.tan(camera.fov * Math.PI / 360) * aspect;
+  worldScale = Math.min(visibleWidth / 44, 1.0); // 手機縮小適配；桌機維持原大小（不放大）
+  if (typeof mesh !== 'undefined' && mesh) mesh.scale.setScalar(worldScale);
 }
-computeFit();
-camera.position.z = baseZ;
 
 // ---------- 2. 燈光（蒂芬妮綠輪廓光 = 科技感關鍵）----------
 scene.add(new THREE.AmbientLight(0xc4d0d6, 1.0));
@@ -223,6 +223,7 @@ for (let i = 0; i < COUNT; i++) {
   mesh.setColorAt(i, color);
 }
 scene.add(mesh);
+computeFit(); // 方塊建立後套用螢幕縮放（手機才不會被切）
 
 // ---------- 4. 把文字「KHRIS」轉成方塊座標 ----------
 function buildTextTargets(text) {

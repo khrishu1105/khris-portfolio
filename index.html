@@ -180,6 +180,51 @@
     box-shadow: 0 12px 30px rgba(0,0,0,0.3);
   }
 
+  /* 聯絡彈窗 */
+  .modal { position: fixed; inset: 0; z-index: 20; display: none; }
+  .modal.open { display: block; }
+  .modal-backdrop {
+    position: absolute; inset: 0;
+    background: rgba(3,5,8,0.62); backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+  .modal-card {
+    position: relative; z-index: 1;
+    max-width: 460px; width: calc(100% - 2.4rem);
+    margin: 11vh auto 0; text-align: left;
+    background: rgba(14,18,26,0.94);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 22px; padding: 2rem clamp(1.4rem, 4vw, 2.2rem);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.55);
+    animation: pop .25s ease;
+  }
+  @keyframes pop { from { opacity:0; transform: translateY(14px); } to { opacity:1; transform:none; } }
+  .modal-card h2 { font-size: clamp(1.6rem, 5vw, 2.2rem); }
+  .modal-card > p { margin-top: .7rem; color: var(--muted); font-size: .95rem; line-height: 1.6; }
+  .modal-close {
+    position: absolute; top: .8rem; right: 1.1rem;
+    background: none; border: none; color: var(--muted);
+    font-size: 1.7rem; line-height: 1; cursor: pointer;
+  }
+  .quick { display: flex; flex-wrap: wrap; gap: .7rem; margin: 1.2rem 0; }
+  .quick-btn {
+    flex: 1 1 auto; text-align: center; text-decoration: none;
+    padding: .75rem 1rem; border-radius: 100px;
+    border: 1px solid rgba(255,255,255,0.18); color: var(--paper);
+    font-weight: 700; font-size: .9rem;
+    background: rgba(255,255,255,0.05); transition: border-color .2s, color .2s;
+  }
+  .quick-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .c-form { display: flex; flex-direction: column; gap: .7rem; }
+  .c-form input, .c-form textarea {
+    width: 100%; padding: .8rem 1rem; border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.04);
+    color: var(--paper); font: inherit; resize: vertical;
+  }
+  .c-form input::placeholder, .c-form textarea::placeholder { color: rgba(232,237,240,0.4); }
+  .c-form input:focus, .c-form textarea:focus { outline: none; border-color: var(--accent); }
+  .c-form .btn { justify-content: center; margin-top: .3rem; }
+
   .footer {
     position: fixed; bottom: 0; left: 0; right: 0; z-index: 3;
     display: flex; justify-content: space-between; align-items: center;
@@ -204,14 +249,14 @@
 
 <header class="nav">
   <a class="brand" href="#top"><span class="dot"></span>KHRIS</a>
-  <a class="nav-cta" href="mailto:your-email@example.com">聊聊合作</a>
+  <a class="nav-cta" href="#" data-open-contact>聊聊合作</a>
 </header>
 
 <div class="content">
   <!-- 第 1 頁：KHRIS 方塊 + 兩顆按鈕（放下方不擋 KHRIS）-->
   <section class="hero">
     <div class="hero-cta">
-      <a class="btn grad-btn" href="mailto:your-email@example.com">聊聊你的需求 →</a>
+      <a class="btn grad-btn" href="#" data-open-contact>聊聊你的需求 →</a>
       <a class="btn ghost" href="#showcase">查看作品集與方案</a>
     </div>
   </section>
@@ -279,6 +324,29 @@
       </div>
     </div>
   </section>
+</div>
+
+<!-- 聯絡彈窗 -->
+<div class="modal" id="contactModal" aria-hidden="true">
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-label="聯絡">
+    <button class="modal-close" data-close aria-label="關閉">×</button>
+    <div class="tag">Contact</div>
+    <h2>聊聊你的<em>需求</em></h2>
+    <p>留下需求我會盡快回覆，或直接用電話 / LINE 找我。</p>
+
+    <div class="quick">
+      <a class="quick-btn" href="tel:0966560288">📞 0966 560 288</a>
+      <a class="quick-btn" href="https://line.me/R/ti/p/~27034946" target="_blank" rel="noopener">💬 LINE：27034946</a>
+    </div>
+
+    <form class="c-form" id="cForm">
+      <input name="name" placeholder="您的稱呼" required />
+      <input name="contact" placeholder="回覆用 Email 或電話" required />
+      <textarea name="msg" rows="3" placeholder="想做什麼？（簡報 / 官網 / 提案設計…）" required></textarea>
+      <button type="submit" class="btn grad-btn">送出需求 →</button>
+    </form>
+  </div>
 </div>
 
 <footer class="footer">
@@ -528,6 +596,25 @@ function tick() {
   requestAnimationFrame(tick);
 }
 tick();
+
+// ---------- 聯絡彈窗 ----------
+const modal = document.getElementById('contactModal');
+document.querySelectorAll('[data-open-contact]').forEach((el) =>
+  el.addEventListener('click', (e) => { e.preventDefault(); modal.classList.add('open'); })
+);
+modal.querySelectorAll('[data-close]').forEach((el) =>
+  el.addEventListener('click', () => modal.classList.remove('open'))
+);
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') modal.classList.remove('open'); });
+document.getElementById('cForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const f = e.target;
+  const subject = encodeURIComponent('網站／設計需求：' + f.name.value);
+  const body = encodeURIComponent(
+    '稱呼：' + f.name.value + '\n聯絡方式：' + f.contact.value + '\n需求內容：' + f.msg.value
+  );
+  window.location.href = 'mailto:your-email@example.com?subject=' + subject + '&body=' + body;
+});
 
 // ---------- 縮放自適應 ----------
 window.addEventListener('resize', () => {

@@ -152,14 +152,8 @@
 </header>
 
 <div class="content">
-  <!-- 第 1 頁：KHRIS 方塊 + 漸層圖框 -->
-  <section class="hero">
-    <div class="card">
-      <div class="kicker">Portfolio · 2026</div>
-      <h1 class="grad">讓你的提案，<br />被記住。</h1>
-      <p>都市計畫背景的設計者，把複雜的內容整理成一眼看得懂的畫面。</p>
-    </div>
-  </section>
+  <!-- 第 1 頁：純 KHRIS 方塊，不放圖框以免擋住 -->
+  <section class="hero"></section>
 
   <!-- 第 2 頁：球體 -->
   <section>
@@ -305,15 +299,21 @@ function waveForm(u, v, t) {
 }
 const FORMS = [textForm, sphereForm, helixForm, waveForm];
 
-// ---------- 炸開方向 ----------
+// ---------- 炸開方向（幅度縮小 → 變形更直接快速）----------
 const scatter = new Float32Array(COUNT * 3);
 for (let i = 0; i < COUNT; i++) {
   const a = Math.sin(i * 91.7) * TAU;
   const b = Math.cos(i * 45.3) * Math.PI;
-  const mag = 18 + (Math.sin(i * 12.3) * 0.5 + 0.5) * 18;
+  const mag = 5 + (Math.sin(i * 12.3) * 0.5 + 0.5) * 7; // 5~12（原本 18~36）
   scatter[i*3]   = Math.sin(b) * Math.cos(a) * mag;
   scatter[i*3+1] = Math.cos(b) * mag;
   scatter[i*3+2] = Math.sin(b) * Math.sin(a) * mag;
+}
+
+// 其他形狀只保留約 42% 方塊（KHRIS 用全部）→ 非 KHRIS 較稀疏
+const keep = new Uint8Array(COUNT);
+for (let i = 0; i < COUNT; i++) {
+  keep[i] = ((Math.sin(i * 78.233) * 0.5 + 0.5) < 0.42) ? 1 : 0;
 }
 
 // ---------- 滑鼠：視差 + 碰觸方塊擾動 ----------
@@ -356,7 +356,7 @@ const clock = new THREE.Clock();
 
 function tick() {
   const t = clock.getElapsedTime();
-  scrollSmooth += (scrollTarget - scrollSmooth) * 0.05;
+  scrollSmooth += (scrollTarget - scrollSmooth) * 0.11; // 更快跟上捲動
   smooth.x += (smooth.tx - smooth.x) * 0.04;
   smooth.y += (smooth.ty - smooth.y) * 0.04;
 
@@ -406,12 +406,17 @@ function tick() {
     }
 
     if (!initialised) { cur[j]=tx; cur[j+1]=ty; cur[j+2]=tz; }
-    cur[j]   += (tx - cur[j])   * 0.16;
-    cur[j+1] += (ty - cur[j+1]) * 0.16;
-    cur[j+2] += (tz - cur[j+2]) * 0.16;
+    cur[j]   += (tx - cur[j])   * 0.28; // 追隨更快 → 變形更乾脆
+    cur[j+1] += (ty - cur[j+1]) * 0.28;
+    cur[j+2] += (tz - cur[j+2]) * 0.28;
+
+    // 逐顆縮放：KHRIS 全滿；其他形狀只有 keep 的方塊留著，其餘縮到 0 消失
+    const sA = (idx === 0 || keep[i]) ? 1 : 0;
+    const sc = sA + ((keep[i] ? 1 : 0) - sA) * blend;
 
     dummy.position.set(cur[j], cur[j+1], cur[j+2]);
     dummy.rotation.set(t*0.12, t*0.15, 0);
+    dummy.scale.setScalar(sc);
     dummy.updateMatrix();
     mesh.setMatrixAt(i, dummy.matrix);
   }

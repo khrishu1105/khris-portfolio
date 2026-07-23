@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>KHRIS — Design & Planning</title>
+<meta name="description" content="Khris｜都市計畫背景的設計者。簡報設計、資訊視覺化、專案規劃。" />
+<style>
+  :root {
+    --ink: #05070a;
+    --paper: #e8edf0;
+    --muted: rgba(232, 237, 240, 0.6);
+    --accent: #2fe0c6;
+    --pad: clamp(1.2rem, 6vw, 4.5rem);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--ink);
+    color: var(--paper);
+    font-family: "PingFang TC", "Noto Sans TC", -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #scene { position: fixed; inset: 0; z-index: 0; display: block; }
+
+  /* 讓文字在方塊上更清楚的暗角 */
+  .vignette {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 45%, rgba(5,7,10,0.55) 100%);
+  }
+
+  /* 頂部導覽列 */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 4;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: clamp(1rem, 3vw, 1.8rem) var(--pad);
+    pointer-events: none;
+  }
+  .brand {
+    display: inline-flex; align-items: center; gap: 0.6rem;
+    font-weight: 800; letter-spacing: 0.05em; font-size: 1.05rem;
+    color: var(--paper); text-decoration: none; pointer-events: auto;
+  }
+  .brand .dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--accent); box-shadow: 0 0 12px var(--accent);
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.55;transform:scale(.8)} }
+  .nav-cta {
+    pointer-events: auto; text-decoration: none;
+    font-size: 0.85rem; letter-spacing: 0.08em; font-weight: 600;
+    color: var(--paper);
+    border: 1px solid rgba(232,237,240,0.28);
+    padding: 0.5rem 1rem; border-radius: 100px;
+    transition: border-color .25s, color .25s, background .25s;
+  }
+  .nav-cta:hover { border-color: var(--accent); color: var(--accent); }
+
+  .content { position: relative; z-index: 2; }
+  section {
+    min-height: 100svh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 0 var(--pad);
+    pointer-events: none;
+  }
+  .kicker {
+    font-size: clamp(0.7rem, 2vw, 0.85rem);
+    letter-spacing: 0.4em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 1.2rem; opacity: 0.95;
+  }
+  h1 {
+    font-size: clamp(2.8rem, 12vw, 7rem);
+    line-height: 1.0; font-weight: 800; letter-spacing: -0.03em;
+  }
+  h1 em, h2 em { color: var(--accent); font-style: normal; }
+  h2 {
+    font-size: clamp(1.9rem, 6vw, 4rem);
+    line-height: 1.12; font-weight: 800; letter-spacing: -0.02em; max-width: 16ch;
+  }
+
+  /* 可點擊的聯絡按鈕 */
+  .btn {
+    pointer-events: auto; align-self: flex-start;
+    margin-top: 2rem; text-decoration: none;
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-weight: 700; font-size: clamp(0.95rem, 2.4vw, 1.1rem);
+    color: var(--ink); background: var(--accent);
+    padding: 0.85rem 1.6rem; border-radius: 100px;
+    box-shadow: 0 8px 30px rgba(47,224,198,0.28);
+    transition: transform .2s, box-shadow .2s;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 12px 38px rgba(47,224,198,0.42); }
+
+  /* 頁尾 */
+  .footer {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 3;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: clamp(0.9rem, 2.5vw, 1.4rem) var(--pad);
+    font-size: 0.72rem; letter-spacing: 0.08em; color: var(--muted);
+    pointer-events: none;
+  }
+  .scroll-hint {
+    font-size: 0.72rem; letter-spacing: 0.15em; color: var(--muted);
+    animation: bob 1.8s ease-in-out infinite;
+    transition: opacity .4s;
+  }
+  body.scrolled .scroll-hint { opacity: 0; }
+  @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(6px)} }
+
+  @media (max-width: 640px) {
+    .footer .made { display: none; } /* 手機空間小，只留捲動提示 */
+  }
+</style>
+
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+</script>
+</head>
+<body id="top">
+
+<canvas id="scene"></canvas>
+<div class="vignette"></div>
+
+<header class="nav">
+  <a class="brand" href="#top"><span class="dot"></span>KHRIS</a>
+  <a class="nav-cta" href="mailto:your-email@example.com">聯絡 →</a>
+</header>
+
+<div class="content">
+  <!-- 形狀 1：KHRIS 文字 -->
+  <section>
+    <div class="kicker">Portfolio · 2026</div>
+    <h1>Design &<br /><em>Planning</em>.</h1>
+  </section>
+
+  <!-- 形狀 2：球體 -->
+  <section>
+    <h2>我把想法，變成<em>看得懂的設計</em>。</h2>
+  </section>
+
+  <!-- 形狀 3：螺旋塔 -->
+  <section>
+    <h2>規劃 × 設計 × <em>資料</em></h2>
+  </section>
+
+  <!-- 形狀 4：波浪 -->
+  <section>
+    <h2>想聊聊你的<em>下一個專案</em>？</h2>
+    <a class="btn" href="mailto:your-email@example.com">寄信給我 →</a>
+  </section>
+</div>
+
+<footer class="footer">
+  <span class="made">Built with Three.js · Khris 2026</span>
+  <span class="scroll-hint">↓ 往下滑會炸開變形</span>
+</footer>
+
+<script type="module">
+import * as THREE from 'three';
+
+// ---------- 1. 基本場景（深黑）----------
+const canvas = document.querySelector('#scene');
+const isMobile = Math.min(window.innerWidth, window.innerHeight) < 700;
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.75 : 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0x05070a, 30, 90);
+
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 200);
+
+// 依螢幕比例自動算鏡頭距離，讓 KHRIS 在手機直式也完整入鏡
+let baseZ = 40;
+function computeFit() {
+  const aspect = window.innerWidth / window.innerHeight;
+  const vFov = camera.fov * Math.PI / 180;
+  const targetWidth = 46;                 // 想讓寬 46 的內容入鏡（KHRIS 約 38 寬 + 邊距）
+  let z = targetWidth / (2 * Math.tan(vFov / 2) * aspect);
+  baseZ = Math.max(z, 36);                // 寬螢幕不要靠太近
+  camera.aspect = aspect;
+  camera.updateProjectionMatrix();
+}
+computeFit();
+camera.position.z = baseZ;
+
+// ---------- 2. 燈光（蒂芬妮綠輪廓光 = 科技感關鍵）----------
+scene.add(new THREE.AmbientLight(0xc4d0d6, 1.0));
+scene.add(new THREE.HemisphereLight(0x5ff3e0, 0x121c20, 1.15));
+const key = new THREE.DirectionalLight(0xffffff, 3.6);
+key.position.set(5, 9, 8);
+scene.add(key);
+const rim = new THREE.DirectionalLight(0x2fe0c6, 3.2);
+rim.position.set(-8, -2, 3);
+scene.add(rim);
+const fill = new THREE.DirectionalLight(0xffffff, 2.8);
+fill.position.set(0, 0, 12);
+scene.add(fill);
+
+// ---------- 3. 網格方塊（手機自動降密度）----------
+const N = isMobile ? 40 : 50;
+const COUNT = N * N;
+const geo = new THREE.BoxGeometry(0.4, 0.4, 0.4);
+const mat = new THREE.MeshStandardMaterial({
+  roughness: 0.22, metalness: 0.3,
+  emissive: 0x1a5f56, emissiveIntensity: 1.15,
+});
+const mesh = new THREE.InstancedMesh(geo, mat, COUNT);
+mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+
+const grid = [];
+const color = new THREE.Color();
+const cGray = new THREE.Color(0xa4b0ba);
+const cTiff = new THREE.Color(0x48f7dd);
+for (let i = 0; i < COUNT; i++) {
+  const gx = i % N, gz = Math.floor(i / N);
+  const u = gx / (N - 1), v = gz / (N - 1);
+  grid.push({ u, v });
+  color.copy(cGray).lerp(cTiff, (u + v) / 2);
+  mesh.setColorAt(i, color);
+}
+scene.add(mesh);
+
+// ---------- 4. 把文字「KHRIS」轉成方塊座標 ----------
+function buildTextTargets(text) {
+  const W = 240, H = 72;
+  const c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 58px Arial, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, W / 2, H / 2);
+  const px = ctx.getImageData(0, 0, W, H).data;
+
+  const pts = [];
+  for (let y = 0; y < H; y++)
+    for (let x = 0; x < W; x++)
+      if (px[(y * W + x) * 4 + 3] > 128) pts.push([x, y]);
+
+  const out = new Float32Array(COUNT * 3);
+  for (let i = 0; i < COUNT; i++) {
+    const p = pts[Math.floor((i / COUNT) * pts.length)];
+    out[i * 3]     = (p[0] / W - 0.5) * 38;
+    out[i * 3 + 1] = -(p[1] / H - 0.5) * 12;
+    out[i * 3 + 2] = Math.sin(i * 12.9898) * 1.3;
+  }
+  return out;
+}
+const textTargets = buildTextTargets('KHRIS');
+
+// ---------- 5. 四種形狀公式 ----------
+const TAU = Math.PI * 2;
+function textForm(u, v, t, i) {
+  return [textTargets[i*3], textTargets[i*3+1], textTargets[i*3+2]];
+}
+function sphereForm(u, v) {
+  const theta = u * TAU, phi = v * Math.PI, r = 9;
+  return [r*Math.sin(phi)*Math.cos(theta), r*Math.cos(phi), r*Math.sin(phi)*Math.sin(theta)];
+}
+function helixForm(u, v) {
+  const angle = v * Math.PI * 4 + u * TAU;
+  const radius = 5 + Math.sin(u * TAU) * 1.2;
+  return [Math.cos(angle)*radius, (v-0.5)*24, Math.sin(angle)*radius];
+}
+function waveForm(u, v, t) {
+  return [(u-0.5)*48, (Math.sin(u*TAU*1.5+t)+Math.cos(v*TAU*1.2+t*0.8))*3.4, (v-0.5)*48];
+}
+const FORMS = [textForm, sphereForm, helixForm, waveForm];
+
+// ---------- 6. 炸開方向 ----------
+const scatter = new Float32Array(COUNT * 3);
+for (let i = 0; i < COUNT; i++) {
+  const a = Math.sin(i * 91.7) * TAU;
+  const b = Math.cos(i * 45.3) * Math.PI;
+  const mag = 18 + (Math.sin(i * 12.3) * 0.5 + 0.5) * 18;
+  scatter[i*3]   = Math.sin(b) * Math.cos(a) * mag;
+  scatter[i*3+1] = Math.cos(b) * mag;
+  scatter[i*3+2] = Math.sin(b) * Math.sin(a) * mag;
+}
+
+// ---------- 7. 滑鼠 + 捲動 ----------
+const mouse = { x: 0, y: 0 };
+const smooth = { x: 0, y: 0 };
+window.addEventListener('pointermove', (e) => {
+  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = (e.clientY / window.innerHeight) * 2 - 1;
+});
+
+let scrollTarget = 0, scrollSmooth = 0;
+function updateScroll() {
+  const max = document.body.scrollHeight - window.innerHeight;
+  scrollTarget = max > 0 ? window.scrollY / max : 0;
+  document.body.classList.toggle('scrolled', window.scrollY > 40);
+}
+window.addEventListener('scroll', updateScroll, { passive: true });
+updateScroll();
+
+const smoothstep = (x) => x * x * (3 - 2 * x);
+const cur = new Float32Array(COUNT * 3);
+let initialised = false;
+
+// ---------- 8. 動畫迴圈 ----------
+const dummy = new THREE.Object3D();
+const clock = new THREE.Clock();
+
+function tick() {
+  const t = clock.getElapsedTime();
+  scrollSmooth += (scrollTarget - scrollSmooth) * 0.05;
+  smooth.x += (mouse.x - smooth.x) * 0.04;
+  smooth.y += (mouse.y - smooth.y) * 0.04;
+
+  const stage = scrollSmooth * (FORMS.length - 1);
+  let idx = Math.floor(stage);
+  if (idx > FORMS.length - 2) idx = FORMS.length - 2;
+  const blend = smoothstep(stage - idx);
+  const formA = FORMS[idx];
+  const formB = FORMS[idx + 1];
+
+  const scatterAmt = Math.pow(Math.sin(blend * Math.PI), 0.32);
+
+  for (let i = 0; i < COUNT; i++) {
+    const g = grid[i];
+    const a = formA(g.u, g.v, t, i);
+    const b = formB(g.u, g.v, t, i);
+    const j = i * 3;
+
+    const tx = a[0] + (b[0]-a[0])*blend + scatter[j]   * scatterAmt;
+    const ty = a[1] + (b[1]-a[1])*blend + scatter[j+1] * scatterAmt;
+    const tz = a[2] + (b[2]-a[2])*blend + scatter[j+2] * scatterAmt;
+
+    if (!initialised) { cur[j]=tx; cur[j+1]=ty; cur[j+2]=tz; }
+    cur[j]   += (tx - cur[j])   * 0.16;
+    cur[j+1] += (ty - cur[j+1]) * 0.16;
+    cur[j+2] += (tz - cur[j+2]) * 0.16;
+
+    dummy.position.set(cur[j], cur[j+1], cur[j+2]);
+    dummy.rotation.set(t*0.12, t*0.15, 0);
+    dummy.updateMatrix();
+    mesh.setMatrixAt(i, dummy.matrix);
+  }
+  initialised = true;
+  mesh.instanceMatrix.needsUpdate = true;
+
+  mesh.rotation.y = smooth.x * 0.35;
+  mesh.rotation.x = smooth.y * 0.18;
+
+  camera.position.z = baseZ - scrollSmooth * (baseZ * 0.12); // 隨捲動輕微拉近
+  camera.lookAt(0, 0, 0);
+
+  renderer.render(scene, camera);
+  requestAnimationFrame(tick);
+}
+tick();
+
+// ---------- 9. 縮放自適應 ----------
+window.addEventListener('resize', () => {
+  computeFit();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  updateScroll();
+});
+</script>
+</body>
+</html>

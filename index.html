@@ -124,6 +124,62 @@
   }
   .btn:hover { transform: translateY(-2px); box-shadow: 0 12px 38px rgba(47,224,198,0.45); }
 
+  /* 第一頁的兩顆按鈕 */
+  .hero-cta {
+    width: 100%; display: flex; gap: 1rem; flex-wrap: wrap;
+    justify-content: center; pointer-events: none;
+  }
+  .hero-cta .btn { pointer-events: auto; margin-top: 0; }
+  .grad-btn {
+    background: linear-gradient(100deg, #ff5a9e, #ff9a5c);
+    color: #fff; box-shadow: 0 10px 34px rgba(255,90,158,0.34);
+  }
+  .ghost {
+    background: transparent; color: var(--paper);
+    border: 1.5px solid rgba(255,255,255,0.42); box-shadow: none;
+  }
+  .ghost:hover { border-color: var(--accent); color: var(--accent); box-shadow: none; }
+
+  /* 作品集展示：兩排反向跑馬燈 */
+  .showcase-sec { align-items: center; }
+  .showcase {
+    pointer-events: auto;
+    width: min(1200px, 94vw);
+    background: linear-gradient(160deg, rgba(34,22,54,0.82), rgba(12,16,26,0.84));
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 26px;
+    backdrop-filter: blur(18px) saturate(1.2);
+    -webkit-backdrop-filter: blur(18px) saturate(1.2);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+    padding: clamp(1.6rem, 4vw, 2.6rem) 0;
+    overflow: hidden;
+  }
+  .showcase .tag, .showcase h2 { padding: 0 clamp(1.5rem, 4vw, 3rem); text-align: left; }
+  .showcase h2 { margin-bottom: 1.5rem; }
+  .marquee {
+    overflow: hidden; width: 100%; padding: 0.55rem 0;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  }
+  .marquee-track {
+    display: flex; gap: clamp(0.8rem, 1.6vw, 1.4rem); width: max-content;
+    animation: scrollL 36s linear infinite;
+  }
+  .marquee.reverse .marquee-track { animation: scrollR 36s linear infinite; }
+  .marquee:hover .marquee-track { animation-play-state: paused; }
+  @keyframes scrollL { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  @keyframes scrollR { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+  .work {
+    flex: 0 0 auto;
+    width: clamp(230px, 26vw, 360px);
+    height: clamp(140px, 20vh, 210px);
+    border-radius: 18px;
+    display: flex; align-items: flex-end; padding: 1.1rem 1.3rem;
+    font-weight: 800; font-size: clamp(1.05rem, 2vw, 1.5rem);
+    color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+  }
+
   .footer {
     position: fixed; bottom: 0; left: 0; right: 0; z-index: 3;
     display: flex; justify-content: space-between; align-items: center;
@@ -152,8 +208,13 @@
 </header>
 
 <div class="content">
-  <!-- 第 1 頁：純 KHRIS 方塊，不放圖框以免擋住 -->
-  <section class="hero"></section>
+  <!-- 第 1 頁：KHRIS 方塊 + 兩顆按鈕（放下方不擋 KHRIS）-->
+  <section class="hero">
+    <div class="hero-cta">
+      <a class="btn grad-btn" href="mailto:your-email@example.com">聊聊你的需求 →</a>
+      <a class="btn ghost" href="#showcase">查看作品集與方案</a>
+    </div>
+  </section>
 
   <!-- 第 2 頁：球體 -->
   <section>
@@ -173,12 +234,49 @@
     </div>
   </section>
 
-  <!-- 第 4 頁：波浪 -->
-  <section>
-    <div class="card">
-      <div class="tag">03 — 合作</div>
-      <h2>來聊聊你的<em>下一個專案</em></h2>
-      <a class="btn" href="mailto:your-email@example.com">寄信給我 →</a>
+  <!-- 第 4 頁：作品集展示（兩排反向跑馬燈）-->
+  <section id="showcase" class="showcase-sec">
+    <div class="showcase">
+      <div class="tag">Portfolio</div>
+      <h2>作品集展示</h2>
+
+      <!-- 第一排：往左跑 -->
+      <div class="marquee">
+        <div class="marquee-track">
+          <div class="work" style="background:linear-gradient(135deg,#2fe0c6,#4f8bff)">不動產官網</div>
+          <div class="work" style="background:linear-gradient(135deg,#8f6bff,#ff5a9e)">品牌 LINE 設計</div>
+          <div class="work" style="background:linear-gradient(135deg,#4f8bff,#8f6bff)">活動社群視覺</div>
+          <div class="work" style="background:linear-gradient(135deg,#ff5a9e,#ff9a5c)">學位口試簡報</div>
+          <div class="work" style="background:linear-gradient(135deg,#2fe0c6,#8f6bff)">工程投標簡報</div>
+          <div class="work" style="background:linear-gradient(135deg,#1b2230,#2fe0c6)">企業實績簡報</div>
+          <!-- 複製一份讓它無縫循環 -->
+          <div class="work" style="background:linear-gradient(135deg,#2fe0c6,#4f8bff)">不動產官網</div>
+          <div class="work" style="background:linear-gradient(135deg,#8f6bff,#ff5a9e)">品牌 LINE 設計</div>
+          <div class="work" style="background:linear-gradient(135deg,#4f8bff,#8f6bff)">活動社群視覺</div>
+          <div class="work" style="background:linear-gradient(135deg,#ff5a9e,#ff9a5c)">學位口試簡報</div>
+          <div class="work" style="background:linear-gradient(135deg,#2fe0c6,#8f6bff)">工程投標簡報</div>
+          <div class="work" style="background:linear-gradient(135deg,#1b2230,#2fe0c6)">企業實績簡報</div>
+        </div>
+      </div>
+
+      <!-- 第二排：往右跑 -->
+      <div class="marquee reverse">
+        <div class="marquee-track">
+          <div class="work" style="background:linear-gradient(135deg,#ff9a5c,#ff5a9e)">財務可行性報告</div>
+          <div class="work" style="background:linear-gradient(135deg,#4f8bff,#2fe0c6)">資料視覺化</div>
+          <div class="work" style="background:linear-gradient(135deg,#8f6bff,#4f8bff)">課程導讀簡報</div>
+          <div class="work" style="background:linear-gradient(135deg,#2fe0c6,#48f7dd)">提案排版設計</div>
+          <div class="work" style="background:linear-gradient(135deg,#ff5a9e,#8f6bff)">都市計畫分析</div>
+          <div class="work" style="background:linear-gradient(135deg,#1b2230,#ff5a9e)">房產自媒體視覺</div>
+          <!-- 複製一份 -->
+          <div class="work" style="background:linear-gradient(135deg,#ff9a5c,#ff5a9e)">財務可行性報告</div>
+          <div class="work" style="background:linear-gradient(135deg,#4f8bff,#2fe0c6)">資料視覺化</div>
+          <div class="work" style="background:linear-gradient(135deg,#8f6bff,#4f8bff)">課程導讀簡報</div>
+          <div class="work" style="background:linear-gradient(135deg,#2fe0c6,#48f7dd)">提案排版設計</div>
+          <div class="work" style="background:linear-gradient(135deg,#ff5a9e,#8f6bff)">都市計畫分析</div>
+          <div class="work" style="background:linear-gradient(135deg,#1b2230,#ff5a9e)">房產自媒體視覺</div>
+        </div>
+      </div>
     </div>
   </section>
 </div>

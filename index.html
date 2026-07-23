@@ -219,7 +219,7 @@ function computeFit() {
   camera.aspect = aspect;
   camera.updateProjectionMatrix();
   const visibleWidth = 2 * baseZ * Math.tan(camera.fov * Math.PI / 360) * aspect;
-  worldScale = Math.min(visibleWidth / fitWidth, 1.0);
+  worldScale = Math.min(visibleWidth / fitWidth, 1.3); // 放寬上限，桌機 KHRIS 放大填滿
   if (typeof mesh !== 'undefined' && mesh) mesh.scale.setScalar(worldScale);
 }
 
